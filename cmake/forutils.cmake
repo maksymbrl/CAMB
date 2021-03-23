@@ -54,15 +54,24 @@ else()
 		)
 	# TODO: make this work for MPI and also Release, Debug and the same for GNU compielrs
 	# if our compilers are from Intel
-	target_compile_options(${FORUTILS_TARGET}
-		PUBLIC
-		"-fpp"
-		"-W0"
-		"-WB"
-		"-fpic"
-		"-gen-dep=.d"
-		"-fast"
-		)
+	if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+		target_compile_options(${FORUTILS_TARGET}
+			PUBLIC
+			"-fpp"
+			"-W0"
+			"-WB"
+			#"-fpic"
+			"-gen-dep=.d"
+			"-fast"
+			)
+	endif()
+	if(CAMB_USE_MPI)
+		# Note: -D will be added automatically by CMake
+		target_compile_definitions(${FORUTILS_TARGET}
+			PUBLIC
+			MPI
+			)
+	endif()
 	# Note: ${CMAKE_INSTALL_LIBDIR} sometimes is lib64 and sometimes is lib, 
 	# so it is better to use explicit value lib
 	message("${CMAKE_INSTALL_LIBDIR}")

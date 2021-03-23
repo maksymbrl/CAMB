@@ -57,6 +57,8 @@ set(CMAKE_DOWNLOAD_DIRECTORY "${CMAKE_SOURCE_DIR}/build/downloads"
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # This is usually a native CMake variable, but it is useful to specify it here.
 option(BUILD_SHARED_LIBS "Specify whether to build HEALPix as shared or static library. Default: OFF" OFF)
+
+#option(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
 #--------------------------------------------------------------------------------
 # Custom options
 #--------------------------------------------------------------------------------
@@ -85,8 +87,27 @@ find_package(OpenMP COMPONENTS Fortran REQUIRED)
 if(CAMB_USE_MPI)
 	find_package(MPI COMPONENTS Fortran REQUIRED)
 endif()
+# BLAS/LAPACK
+# This works for OpenBLAS
+# Note: Sometimes this doesn't work, i.e. it cannot detect MKL/OpenBLAS
+# for some weird reason. In this case it is a good idea to logout and login
+# to refresh terminal.
+set($ENV{BLA_VENDOR} 
+		OpenBLAS
+		Intel10_32
+		Intel10_64lp
+		Intel10_64lp_seq
+		Intel10_64ilp
+		Intel10_64ilp_seq
+		Intel10_64_dyn
+		)
+find_package(BLAS) #REQUIRED)
+find_package(LAPACK)
+# CFitsIO
+find_package(CFITSIO 3.47 REQUIRED)
 # Looking for Unix/Linux Math Library
 find_library(MATH_LIB m)
 
-
+#================================================================================
 include(forutils)
+include(camb)

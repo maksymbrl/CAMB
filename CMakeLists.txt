@@ -62,7 +62,7 @@ include(ExternalProject)
 set(CMAKE_MODULE_PATH
 	"${CMAKE_MODULE_PATH}"
 	"${CMAKE_SOURCE_DIR}/cmake"
-	#"${CMAKE_SOURCE_DIR}/cmake/modules"
+	"${CMAKE_SOURCE_DIR}/cmake/modules"
 	)
 # Include main custom file which controls all other subprojects
 include(main)
