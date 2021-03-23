@@ -65,11 +65,6 @@ option(BUILD_SHARED_LIBS "Specify whether to build HEALPix as shared or static l
 # This is a quick and dirty fix for "C preprocessor fails sanity check"
 # which may appear during CFitsIO configuration via configure.
 set(CAMB_CPP_COMPILER "${CMAKE_CXX_COMPILER} -E")
-# Option for user to decided whether he/she wants to build cfitiso from source.
-# Note: this still will first check whether CFitsIO installed on host system.
-#option(HEALPix_BUILD_CFITSIO "Download, compile and install CFitsIO from source. Default: ON." ON)
-# Build CFitsIO with cURL support
-#option(CFITSIO_USE_CURL "Building CFitsIO with cURL support. Default: OFF." OFF)
 # Build CAMB (and Forutils) with MPI support
 option(CAMB_USE_MPI "Building HEALPix with MPI support. Default: ON." ON)
 #================================================================================
