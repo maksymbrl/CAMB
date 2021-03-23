@@ -74,7 +74,7 @@ else()
 	endif()
 	# Note: ${CMAKE_INSTALL_LIBDIR} sometimes is lib64 and sometimes is lib, 
 	# so it is better to use explicit value lib
-	message("${CMAKE_INSTALL_LIBDIR}")
+	#message("${CMAKE_INSTALL_LIBDIR}")
 	# Installing CAMB Forutils project
 	# For future reference:
 	# https://cmake.org/cmake/help/latest/command/install.html
@@ -95,7 +95,6 @@ else()
 			DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 			COMPONENT include
 		)
-	message("${FORUTILS_SOURCE_DIR}")
 endif()
 
 
