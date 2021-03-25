@@ -38,14 +38,14 @@ set(CAMB_SOURCES
 		"${CAMB_SOURCE_DIR}/writefits.f90"	
 	)
 # This should be added to FindHEALPIX.cmake somehow.
-set(HEALPIX_LIBRARIES
-		"/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/lib/libhealpix.a"
-		"/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/lib/libsharp.a"
-	)
-set(HEALPIX_INCLUDE_DIRS
-	"/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/include"
-	"/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/include/libsharp"
-	)
+#set(HEALPIX_LIBRARIES
+#		"/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/lib/libhealpix.a"
+#		"/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/lib/libsharp.a"
+#	)
+#set(HEALPIX_INCLUDE_DIRS
+#	"/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/include"
+#	"/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/include/libsharp"
+#	)
 #/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/lib
 # adding libcamb.a
 add_library(${CAMB_TARGET}

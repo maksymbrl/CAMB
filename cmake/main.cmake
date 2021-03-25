@@ -67,6 +67,15 @@ option(BUILD_SHARED_LIBS "Specify whether to build HEALPix as shared or static l
 set(CAMB_CPP_COMPILER "${CMAKE_CXX_COMPILER} -E")
 # Build CAMB (and Forutils) with MPI support
 option(CAMB_USE_MPI "Building HEALPix with MPI support. Default: ON." ON)
+#
+set(HEALPIX_LIBRARIES ""
+	CACHE FILEPATH
+	"Path to HEALPix libraries."
+	)
+set(HEALPIX_INCLUDE_DIRS ""
+	CACHE PATH
+	"Directory with all HEALPix include files."
+	)
 #================================================================================
 # Looking for necessary packages
 #================================================================================
