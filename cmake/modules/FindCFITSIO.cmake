@@ -60,6 +60,9 @@ if(CFITSIO_FOUND)
   if(NOT CFITSIO_LIBRARIES)
     set(CFITSIO_LIBRARIES ${CFITSIO_LIBRARY})
     if(${CFITSIO_VERSION} VERSION_GREATER_EQUAL 3.42)
+			# CMake configure scripts foesn't work properly,
+			# so we look for cURL in a standard manner.
+			set(CURL_NO_CURL_CMAKE ON)
       find_package(CURL QUIET)
       if(CURL_FOUND)
         set(CFITSIO_LIBRARIES ${CFITSIO_LIBRARIES} ${CURL_LIBRARIES})
