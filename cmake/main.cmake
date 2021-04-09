@@ -51,12 +51,12 @@ set(CMAKE_Fortran_MODULE_DIRECTORY "${CMAKE_INSTALL_PREFIX}/mod"
 # Setting the default value where to download the external project sources (curl, cfitsio).
 set(CMAKE_DOWNLOAD_DIRECTORY "${CMAKE_SOURCE_DIR}/build/downloads"
 	CACHE STRING
-	"Directory where to download HEALPix dependencies' source files."
+	"Directory where to download CAMB dependencies' source files."
 	)
 # Including -fPIC flag globally (it can also be set locally for each target)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # This is usually a native CMake variable, but it is useful to specify it here.
-option(BUILD_SHARED_LIBS "Specify whether to build HEALPix as shared or static library. Default: OFF" OFF)
+option(BUILD_SHARED_LIBS "Specify whether to build CAMB as shared or static library. Default: OFF" OFF)
 
 #option(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
 #--------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ option(BUILD_SHARED_LIBS "Specify whether to build HEALPix as shared or static l
 # which may appear during CFitsIO configuration via configure.
 set(CAMB_CPP_COMPILER "${CMAKE_CXX_COMPILER} -E")
 # Build CAMB (and Forutils) with MPI support
-option(CAMB_USE_MPI "Building HEALPix with MPI support. Default: ON." ON)
+option(CAMB_USE_MPI "Building CAMB with MPI support. Default: ON." ON)
 #
 set(HEALPIX_LIBRARIES ""
 	CACHE FILEPATH
@@ -75,6 +75,15 @@ set(HEALPIX_LIBRARIES ""
 set(HEALPIX_INCLUDE_DIRS ""
 	CACHE PATH
 	"Directory with all HEALPix include files."
+	)
+# TODO: Make this work with find_package() or just wait when Bryan writes FindCFitsIO.cmake file
+set(CFITSIO_LIBRARIES ""
+	CACHE FILEPATH
+	"Path to CFITSIO libraries."
+	)
+set(CFITSIO_INCLUDE_DIRS ""
+	CACHE PATH
+	"Directory with all CFITSIO include files."
 	)
 #================================================================================
 # Looking for necessary packages
@@ -96,19 +105,28 @@ endif()
 # Note: Sometimes this doesn't work, i.e. it cannot detect MKL/OpenBLAS
 # for some weird reason. In this case it is a good idea to logout and login
 # to refresh terminal.
+# From documentation:
+# Note
+# C, CXX or Fortran must be enabled to detect a BLAS library. 
+# C or CXX must be enabled to use Intel Math Kernel Library (MKL).
 set($ENV{BLA_VENDOR} 
-		OpenBLAS
 		Intel10_32
 		Intel10_64lp
 		Intel10_64lp_seq
 		Intel10_64ilp
 		Intel10_64ilp_seq
 		Intel10_64_dyn
+		OpenBLAS
 		)
 find_package(BLAS) #REQUIRED)
 find_package(LAPACK)
 # CFitsIO
-find_package(CFITSIO 3.47 REQUIRED)
+# TODO: make this work correctly with commander. As of now, need to manually provide CFitsIO paths
+# CMake configure scripts foesn't work properly,
+# so we look for cURL in a standard manner.
+set(CURL_NO_CURL_CMAKE ON)
+find_package(CURL)
+#find_package(CFITSIO 3.47) #REQUIRED)
 # Looking for Unix/Linux Math Library
 find_library(MATH_LIB m)
 
