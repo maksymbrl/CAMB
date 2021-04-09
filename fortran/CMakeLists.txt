@@ -13,8 +13,8 @@ find_package(OpenMP COMPONENTS Fortran)
 find_package(MPI COMPONENTS Fortran)
 
 set(CAMB_SOURCES
-		bessels.f90
 		camb.f90
+		bessels.f90
 		camb_python.f90
 		classes.f90
 		cmbmain.f90

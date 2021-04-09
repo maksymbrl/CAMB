@@ -67,7 +67,7 @@ endif
 ifdef NONNATIVE
 FFLAGS+=-O3 -ipo -axCORE-AVX2
 else
-FFLAGS+=-fast
+#FFLAGS+=-fast
 endif
 
 ## This is flag is passed to the Fortran compiler allowing it to link C++ if required (not usually):

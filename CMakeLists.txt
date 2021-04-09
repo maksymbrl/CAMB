@@ -14,7 +14,7 @@ cmake_minimum_required(VERSION ${CMAKE_MINIMUM} FATAL_ERROR)
 project(CAMB
 	DESCRIPTION "Code for Anisotropies in the Microwave Background"
 	VERSION ${CAMB_VERSION}
-	LANGUAGES Fortran
+	LANGUAGES C CXX Fortran
 	HOMEPAGE_URL "https://camb.info/"
 	)
 #================================================================================
@@ -32,7 +32,7 @@ include(CTest)
 # Scripts that creates options that depends on other options.
 include(CMakeDependentOption)
 # Tell CMake that the `install` target needs to install required system libraries (eg: Windows SDK)
-include(InstallRequiredSystemLibraries)
+#include(InstallRequiredSystemLibraries)
 # Helper to create relocatable packages
 include(CMakePackageConfigHelpers)
 include(FindPkgConfig)
