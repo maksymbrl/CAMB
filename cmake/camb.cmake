@@ -1,20 +1,24 @@
 #================================================================================
-# Authors: Maksym Brilenkov
+# Author: Maksym Brilenkov
 #================================================================================
 set(CAMB_TARGET camb)
 set(CAMB_SOURCE_DIR "${PROJECT_SOURCE_DIR}/fortran")
 set(CAMB_SOURCES
 		"${CAMB_SOURCE_DIR}/camb.f90"
+		"${CAMB_SOURCE_DIR}/constants.f90"
+		"${CAMB_SOURCE_DIR}/classes.f90"
+		"${CAMB_SOURCE_DIR}/config.f90"
+		"${CAMB_SOURCE_DIR}/MathUtils.f90"
+		"${CAMB_SOURCE_DIR}/subroutines.f90"
+		"${CAMB_SOURCE_DIR}/DarkAge21cm.f90"
+		"${CAMB_SOURCE_DIR}/DarkEnergyInterface.f90"
+		"${CAMB_SOURCE_DIR}/SourceWindows.f90"
+		"${CAMB_SOURCE_DIR}/massive_neutrinos.f90"
 		"${CAMB_SOURCE_DIR}/bessels.f90"
 		"${CAMB_SOURCE_DIR}/camb_python.f90"
-		"${CAMB_SOURCE_DIR}/classes.f90"
 		"${CAMB_SOURCE_DIR}/cmbmain.f90"
-		"${CAMB_SOURCE_DIR}/config.f90"
-		"${CAMB_SOURCE_DIR}/constants.f90"
 		"${CAMB_SOURCE_DIR}/cosmorec.f90"
-		"${CAMB_SOURCE_DIR}/DarkAge21cm.f90"
 		"${CAMB_SOURCE_DIR}/DarkEnergyFluid.f90"
-		"${CAMB_SOURCE_DIR}/DarkEnergyInterface.f90"
 		"${CAMB_SOURCE_DIR}/DarkEnergyPPF.f90"
 		"${CAMB_SOURCE_DIR}/DarkEnergyQuintessence.f90"
 		"${CAMB_SOURCE_DIR}/equations.f90"
@@ -23,20 +27,18 @@ set(CAMB_SOURCES
 		"${CAMB_SOURCE_DIR}/inidriver.f90"
 		"${CAMB_SOURCE_DIR}/InitialPower.f90"
 		"${CAMB_SOURCE_DIR}/lensing.f90"
-		"${CAMB_SOURCE_DIR}/massive_neutrinos.f90"
-		"${CAMB_SOURCE_DIR}/MathUtils.f90"
 		"${CAMB_SOURCE_DIR}/model.f90"
 		"${CAMB_SOURCE_DIR}/PowellMinimize.f90"
 		"${CAMB_SOURCE_DIR}/recfast.f90"
 		"${CAMB_SOURCE_DIR}/reionization.f90"
-		"${CAMB_SOURCE_DIR}/results.f90"
+		"${CAMB_SOURCE_DIR}/results.f90" #<= GNU complains about circular dependency, but not Intel
 		"${CAMB_SOURCE_DIR}/SecondOrderPK.f90"
 		"${CAMB_SOURCE_DIR}/SeparableBispectrum.f90"
 		"${CAMB_SOURCE_DIR}/sigma8.f90"
-		"${CAMB_SOURCE_DIR}/SourceWindows.f90"
-		"${CAMB_SOURCE_DIR}/subroutines.f90"
 		"${CAMB_SOURCE_DIR}/writefits.f90"	
 	)
+#ar -r libcamb.a constants.o config.o classes.o MathUtils.o subroutines.o DarkAge21cm.o DarkEnergyInterface.o SourceWindows.o massive_neutrinos.o model.o results.o bessels.o recfast.o DarkEnergyFluid.o DarkEnergyPPF.o PowellMinimize.o DarkEnergyQuintessence.o equations.o reionization.o InitialPower.o halofit.o SecondOrderPK.o lensing.o SeparableBispectrum.o cmbmain.o camb.o camb_python.o
+ar: creating libcamb.a
 # This should be added to FindHEALPIX.cmake somehow.
 #set(HEALPIX_LIBRARIES
 #		"/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/lib/libhealpix.a"
@@ -85,18 +87,44 @@ target_link_libraries(${CAMB_TARGET}
 	${MATH_LIB}
 	${CMAKE_DL_LIBS}
   )
+# Resolving Preprocessor statements for a given Compiler Toolchain
+# (i.e. adding "-fpp" or "-cpp")
+set_source_files_properties( 
+	"${CAMB_SOURCES}"
+	PROPERTIES Fortran_PREPROCESS ON
+	)
 # Specifying compiler flags
-# TODO: make this work with GNU
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
 	target_compile_options(${CAMB_TARGET}
 		PUBLIC
-		"-fpp"
+		"-fpp" #<= specified at the top there
 		"-W0"
 		"-WB"
 		"-fp-model" "precise"
 		#"-fpic"
 		"-gen-dep=.d"
+		#"-gen-dep=$$*.d"
 		"-fast"
+		)
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+	# From:
+	# https://software.intel.com/content/www/us/en/develop/documentation/fortran-compiler-oneapi-dev-guide-and-reference/top/compiler-reference/compiler-options/compiler-option-details/preprocessor-options/gen-dep.html
+	# the flag
+	target_compile_options(${CAMB_TARGET}
+		PUBLIC
+		"-MMD" 
+		"-cpp"
+		"-ffree-line-length-none" 
+		"-fmax-errors=4" 
+		#"-ffast-math"
+		#"-fopenmp" 
+		"-march=native"
+		"-fsyntax-only"
+		#"-gen-dep=.d"
+		#"-ffree-line-length-none"
+		#"-fmax-errors=4"
+		#"-MMD"
+		#"-ffast-math"
 		)
 endif()
 # For some reason it doesn't work with 
@@ -104,13 +132,13 @@ endif()
 #	PUBLIC
 #	WRITE_FITS
 #	)
-#if(CAMB_USE_MPI)
-#	# Note: -D will be added automatically by CMake
-#	target_compile_definitions(${CAMB_TARGET}
-#		PUBLIC
-#		MPI	
-#		)
-#endif()
+if(CAMB_USE_MPI)
+	# Note: -D will be added automatically by CMake
+	target_compile_definitions(${CAMB_TARGET}
+		PUBLIC
+		MPI	
+		)
+endif()
 install(TARGETS ${FORUTILS_TARGET}
 	ARCHIVE
 		DESTINATION "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}"
@@ -127,6 +155,25 @@ install(TARGETS ${FORUTILS_TARGET}
 	)
 
 #[==[
+# GNU
+Got Circular dependency here:
+make -C Release --no-print-directory -f../Makefile FORUTILS_SRC_DIR=.. libforutils.a
+make[1]: Circular precision.mod <- precision.mod dependency dropped.
+make[1]: Circular results.mod <- results.mod dependency dropped.
+make[1]: Circular spherbessels.mod <- spherbessels.mod dependency dropped.
+make[1]: 'libcamb.a' is up to date.
+
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../DarkEnergyQuintessence.f90 -o DarkEnergyQuintessence.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../equations.f90 -o equations.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../reionization.f90 -o reionization.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../InitialPower.f90 -o InitialPower.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../halofit.f90 -o halofit.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../SecondOrderPK.f90 -o SecondOrderPK.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../lensing.f90 -o lensing.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../SeparableBispectrum.f90 -o SeparableBispectrum.o
+
+
+# Intel
 [maksymb@owl18 fortran]$ make VERBOSE=1
 make -C Release --no-print-directory -f../Makefile FORUTILS_SRC_DIR=.. libforutils.a
 ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=constants.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../constants.f90 -o constants.o

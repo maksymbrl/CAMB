@@ -122,10 +122,12 @@ IFLAG = -I
 
 #Settings for building camb_fits
 #Location of FITSIO and name of library
-FITSDIR       ?= /usr/local/lib
+#FITSDIR       ?= /usr/local/lib
+FITSDIR       ?= /mn/stornext/u3/maksymb/commander/quiet/build_owl3135/install/lib/
 FITSLIB       = cfitsio
 #Location of HEALPIX for building camb_fits
-HEALPIXDIR    ?= /usr/local/healpix
+#HEALPIXDIR    ?= /usr/local/healpix
+HEALPIXDIR    ?= /mn/stornext/u3/maksymb/commander/quiet/build_owl3135/install/healpix
 
 ifneq ($(FISHER),)
 # Its dependencies are all meet by the libutils.a which always added.

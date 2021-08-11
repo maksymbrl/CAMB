@@ -1,5 +1,5 @@
 #================================================================================
-# Authors: Maksym Brilenkov
+# Author: Maksym Brilenkov
 #================================================================================
 # Description: Top CMakeLists.txt for CAMB project
 #================================================================================
@@ -8,7 +8,7 @@
 #================================================================================
 # Standard CMake configuration
 #================================================================================
-set(CMAKE_MINIMUM "3.17")
+set(CMAKE_MINIMUM "3.19")
 set(CAMB_VERSION "3.70")
 cmake_minimum_required(VERSION ${CMAKE_MINIMUM} FATAL_ERROR)
 project(CAMB

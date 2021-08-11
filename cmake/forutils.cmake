@@ -1,5 +1,5 @@
 #================================================================================
-# Authors: Maksym Brilenkov
+# Author: Maksym Brilenkov
 #================================================================================
 # This will check the git submodules for CAMB project (i.e. forutils)
 if(GIT_SUBMODULE)
@@ -33,13 +33,26 @@ else()
 			"${FORUTILS_SOURCE_DIR}/RangeUtils.f90"
 			"${FORUTILS_SOURCE_DIR}/Interpolation.f90"
 		)
-	# libforutils.a
+	# Creating library target -- `libforutils.a`
 	add_library(${FORUTILS_TARGET}
 		"${FORUTILS_SOURCES}"
+		)
+	# Resolving Preprocessor statements for a given Compiler Toolchain
+	# (i.e. adding "-fpp" or "-cpp")
+	set_source_files_properties( 
+		"${FORUTILS_SOURCES}"
+	  PROPERTIES Fortran_PREPROCESS ON
 		)
 	#target_include_directories("${FORUTILS_TARGET}"
 	#	"${FORUTILS_SOURCE_DIR}"
 	#	)
+	if(CAMB_USE_MPI)
+		# Note: -D will be added automatically by CMake
+		target_compile_definitions(${FORUTILS_TARGET}
+			PUBLIC
+			MPI
+			)
+	endif()
 	# linking MPI
 	if(CAMB_USE_MPI)
 		target_link_libraries("${FORUTILS_TARGET}"
@@ -54,6 +67,7 @@ else()
 		)
 	# TODO: make this work for MPI and also Release, Debug and the same for GNU compielrs
 	# if our compilers are from Intel
+	# Note: "-fPIC" flag is added by position independent code automatically
 	if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
 		target_compile_options(${FORUTILS_TARGET}
 			PUBLIC
@@ -64,13 +78,19 @@ else()
 			"-gen-dep=.d"
 			"-fast"
 			)
-	endif()
-	if(CAMB_USE_MPI)
-		# Note: -D will be added automatically by CMake
-		target_compile_definitions(${FORUTILS_TARGET}
+	elseif(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+		target_compile_options(${FORUTILS_TARGET}
 			PUBLIC
-			MPI
+			"-cpp" # <= doesn't work otherwise (although added PREPROC above :/)
+			"-ffree-line-length-none"
+			"-fmax-errors=4"
+			"-MMD"
+			"-ffast-math"
+			#"-gen-dep=.d"
+			"-march=native"
 			)
+		#-O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native
+		#-cpp -ffree-line-length-none -fmax-errors=4 -MMD -fopenmp -fPIC -O3 -ffast-math -o Misc    Utils.o -c
 	endif()
 	# Note: ${CMAKE_INSTALL_LIBDIR} sometimes is lib64 and sometimes is lib, 
 	# so it is better to use explicit value lib
@@ -101,6 +121,38 @@ endif()
 
 # Output from make command:
 #[==[
+# options for GNU GCC 10.3.0
+gfortran -cpp -ffree-line-length-none -fmax-errors=4 -MMD -fopenmp -fPIC -O3 -ffast-math -o MiscUtils.o -c ../MiscUtils.f90
+gfortran -cpp -ffree-line-length-none -fmax-errors=4 -MMD -fopenmp -fPIC -O3 -ffast-math -o MpiUtils.o -c ../MpiUtils.f90
+gfortran -cpp -ffree-line-length-none -fmax-errors=4 -MMD -fopenmp -fPIC -O3 -ffast-math -o StringUtils.o -c ../StringUtils.f90
+gfortran -cpp -ffree-line-length-none -fmax-errors=4 -MMD -fopenmp -fPIC -O3 -ffast-math -o ArrayUtils.o -c ../ArrayUtils.f90
+gfortran -cpp -ffree-line-length-none -fmax-errors=4 -MMD -fopenmp -fPIC -O3 -ffast-math -o FileUtils.o -c ../FileUtils.f90
+gfortran -cpp -ffree-line-length-none -fmax-errors=4 -MMD -fopenmp -fPIC -O3 -ffast-math -o IniObjects.o -c ../IniObjects.f90
+gfortran -cpp -ffree-line-length-none -fmax-errors=4 -MMD -fopenmp -fPIC -O3 -ffast-math -o RandUtils.o -c ../RandUtils.f90
+gfortran -cpp -ffree-line-length-none -fmax-errors=4 -MMD -fopenmp -fPIC -O3 -ffast-math -o ObjectLists.o -c ../ObjectLists.f90
+gfortran -cpp -ffree-line-length-none -fmax-errors=4 -MMD -fopenmp -fPIC -O3 -ffast-math -o MatrixUtils.o -c ../MatrixUtils.f90
+gfortran -cpp -ffree-line-length-none -fmax-errors=4 -MMD -fopenmp -fPIC -O3 -ffast-math -o RangeUtils.o -c ../RangeUtils.f90
+gfortran -cpp -ffree-line-length-none -fmax-errors=4 -MMD -fopenmp -fPIC -O3 -ffast-math -o Interpolation.o -c ../Interpolation.f90
+ar -r libforutils.a MiscUtils.o MpiUtils.o StringUtils.o ArrayUtils.o FileUtils.o IniObjects.o RandUtils.o ObjectLists.o MatrixUtils.o RangeUtils.o Interpolation.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../constants.f90 -o constants.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../config.f90 -o config.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../classes.f90 -o classes.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../MathUtils.f90 -o MathUtils.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../subroutines.f90 -o subroutines.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../DarkAge21cm.f90 -o DarkAge21cm.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../DarkEnergyInterface.f90 -o DarkEnergyInterface.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../SourceWindows.f90 -o SourceWindows.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../massive_neutrinos.f90 -o massive_neutrinos.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../model.f90 -o model.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../results.f90 -o results.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../bessels.f90 -o bessels.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../recfast.f90 -o recfast.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../DarkEnergyFluid.f90 -o DarkEnergyFluid.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../DarkEnergyPPF.f90 -o DarkEnergyPPF.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../PowellMinimize.f90 -o PowellMinimize.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../DarkEnergyQuintessence.f90 -o DarkEnergyQuintessence.o
+gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../equations.f90 -o equations.o
+
 # These options are only for Intel as far as I understand
 make -C Release --no-print-directory -f../Makefile FORUTILS_SRC_DIR=.. libforutils.a
 ifort -fpp -W0 -WB -qopenmp -fpic -gen-dep=.d -fast -o MiscUtils.o -c ../MiscUtils.f90

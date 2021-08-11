@@ -97,6 +97,8 @@ camb: libforutils directories
 libcamb: libforutils directories
 	@$(MAKE) -C $(OUTPUT_DIR) $(MAKEOPT) -r -f ../Makefile_main $(CAMBLIB)
 
+$(echo "$(MAKEOPT)")
+
 python: libforutils_so directories_so
 	@$(MAKE) -C $(DLL_DIR) $(MAKEOPT) -r -f ../Makefile_main camblib.so F90FLAGS="$(SF90FLAGS)" OUTPUT_DIR=$(DLL_DIR)
 

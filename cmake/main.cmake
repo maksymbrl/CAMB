@@ -1,5 +1,5 @@
 #================================================================================
-# Authors: Maksym Brilenkov
+# Author: Maksym Brilenkov
 #================================================================================
 # Description: This file contains general instructions on how to build CAMB and
 # its (sub)projects (aka main method in C/C++ languages).
