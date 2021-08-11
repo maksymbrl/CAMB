@@ -14,12 +14,16 @@ set(CAMB_SOURCES
 		"${CAMB_SOURCE_DIR}/DarkEnergyInterface.f90"
 		"${CAMB_SOURCE_DIR}/SourceWindows.f90"
 		"${CAMB_SOURCE_DIR}/massive_neutrinos.f90"
+		"${CAMB_SOURCE_DIR}/model.f90"
+		"${CAMB_SOURCE_DIR}/results.f90" 
 		"${CAMB_SOURCE_DIR}/bessels.f90"
+		"${CAMB_SOURCE_DIR}/recfast.f90"
+		"${CAMB_SOURCE_DIR}/DarkEnergyFluid.f90"
+		"${CAMB_SOURCE_DIR}/DarkEnergyPPF.f90"
+		"${CAMB_SOURCE_DIR}/PowellMinimize.f90"
 		"${CAMB_SOURCE_DIR}/camb_python.f90"
 		"${CAMB_SOURCE_DIR}/cmbmain.f90"
 		"${CAMB_SOURCE_DIR}/cosmorec.f90"
-		"${CAMB_SOURCE_DIR}/DarkEnergyFluid.f90"
-		"${CAMB_SOURCE_DIR}/DarkEnergyPPF.f90"
 		"${CAMB_SOURCE_DIR}/DarkEnergyQuintessence.f90"
 		"${CAMB_SOURCE_DIR}/equations.f90"
 		"${CAMB_SOURCE_DIR}/halofit.f90"
@@ -27,28 +31,14 @@ set(CAMB_SOURCES
 		"${CAMB_SOURCE_DIR}/inidriver.f90"
 		"${CAMB_SOURCE_DIR}/InitialPower.f90"
 		"${CAMB_SOURCE_DIR}/lensing.f90"
-		"${CAMB_SOURCE_DIR}/model.f90"
-		"${CAMB_SOURCE_DIR}/PowellMinimize.f90"
-		"${CAMB_SOURCE_DIR}/recfast.f90"
 		"${CAMB_SOURCE_DIR}/reionization.f90"
-		"${CAMB_SOURCE_DIR}/results.f90" #<= GNU complains about circular dependency, but not Intel
 		"${CAMB_SOURCE_DIR}/SecondOrderPK.f90"
 		"${CAMB_SOURCE_DIR}/SeparableBispectrum.f90"
-		"${CAMB_SOURCE_DIR}/sigma8.f90"
-		"${CAMB_SOURCE_DIR}/writefits.f90"	
+		# These two were in the Makefile but not during compilation with GNU compilers
+		# Note: Intel compile with these, but GNU cannot
+		#"${CAMB_SOURCE_DIR}/sigma8.f90"
+		#"${CAMB_SOURCE_DIR}/writefits.f90"	
 	)
-#ar -r libcamb.a constants.o config.o classes.o MathUtils.o subroutines.o DarkAge21cm.o DarkEnergyInterface.o SourceWindows.o massive_neutrinos.o model.o results.o bessels.o recfast.o DarkEnergyFluid.o DarkEnergyPPF.o PowellMinimize.o DarkEnergyQuintessence.o equations.o reionization.o InitialPower.o halofit.o SecondOrderPK.o lensing.o SeparableBispectrum.o cmbmain.o camb.o camb_python.o
-ar: creating libcamb.a
-# This should be added to FindHEALPIX.cmake somehow.
-#set(HEALPIX_LIBRARIES
-#		"/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/lib/libhealpix.a"
-#		"/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/lib/libsharp.a"
-#	)
-#set(HEALPIX_INCLUDE_DIRS
-#	"/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/include"
-#	"/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/include/libsharp"
-#	)
-#/mn/stornext/u3/maksymb/commander/maksymb/build/install/healpix/lib
 # adding libcamb.a
 add_library(${CAMB_TARGET}
 	"${CAMB_SOURCES}"
@@ -89,10 +79,10 @@ target_link_libraries(${CAMB_TARGET}
   )
 # Resolving Preprocessor statements for a given Compiler Toolchain
 # (i.e. adding "-fpp" or "-cpp")
-set_source_files_properties( 
-	"${CAMB_SOURCES}"
-	PROPERTIES Fortran_PREPROCESS ON
-	)
+#set_source_files_properties( 
+#	"${CAMB_SOURCES}"
+#	PROPERTIES Fortran_PREPROCESS ON
+#	)
 # Specifying compiler flags
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
 	target_compile_options(${CAMB_TARGET}
@@ -102,7 +92,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
 		"-WB"
 		"-fp-model" "precise"
 		#"-fpic"
-		"-gen-dep=.d"
+		#"-gen-dep=.d"
 		#"-gen-dep=$$*.d"
 		"-fast"
 		)
@@ -119,7 +109,7 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
 		#"-ffast-math"
 		#"-fopenmp" 
 		"-march=native"
-		"-fsyntax-only"
+		#"-fsyntax-only"
 		#"-gen-dep=.d"
 		#"-ffree-line-length-none"
 		#"-fmax-errors=4"
@@ -153,60 +143,3 @@ install(TARGETS ${FORUTILS_TARGET}
 		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 		COMPONENT include
 	)
-
-#[==[
-# GNU
-Got Circular dependency here:
-make -C Release --no-print-directory -f../Makefile FORUTILS_SRC_DIR=.. libforutils.a
-make[1]: Circular precision.mod <- precision.mod dependency dropped.
-make[1]: Circular results.mod <- results.mod dependency dropped.
-make[1]: Circular spherbessels.mod <- spherbessels.mod dependency dropped.
-make[1]: 'libcamb.a' is up to date.
-
-gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../DarkEnergyQuintessence.f90 -o DarkEnergyQuintessence.o
-gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../equations.f90 -o equations.o
-gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../reionization.f90 -o reionization.o
-gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../InitialPower.f90 -o InitialPower.o
-gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../halofit.f90 -o halofit.o
-gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../SecondOrderPK.f90 -o SecondOrderPK.o
-gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../lensing.f90 -o lensing.o
-gfortran -O3 -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp -march=native -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../SeparableBispectrum.f90 -o SeparableBispectrum.o
-
-
-# Intel
-[maksymb@owl18 fortran]$ make VERBOSE=1
-make -C Release --no-print-directory -f../Makefile FORUTILS_SRC_DIR=.. libforutils.a
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=constants.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../constants.f90 -o constants.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=config.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../config.f90 -o config.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=classes.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../classes.f90 -o classes.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=MathUtils.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../MathUtils.f90 -o MathUtils.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=subroutines.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../subroutines.f90 -o subroutines.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=DarkAge21cm.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../DarkAge21cm.f90 -o DarkAge21cm.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=DarkEnergyInterface.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../DarkEnergyInterface.f90 -o DarkEnergyInterface.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=SourceWindows.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../SourceWindows.f90 -o SourceWindows.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=massive_neutrinos.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../massive_neutrinos.f90 -o massive_neutrinos.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=model.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../model.f90 -o model.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=results.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../results.f90 -o results.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=bessels.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../bessels.f90 -o bessels.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=recfast.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../recfast.f90 -o recfast.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=DarkEnergyFluid.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../DarkEnergyFluid.f90 -o DarkEnergyFluid.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=DarkEnergyPPF.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../DarkEnergyPPF.f90 -o DarkEnergyPPF.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=PowellMinimize.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../PowellMinimize.f90 -o PowellMinimize.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=DarkEnergyQuintessence.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../DarkEnergyQuintessence.f90 -o DarkEnergyQuintessence.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=equations.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../equations.f90 -o equations.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=reionization.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../reionization.f90 -o reionization.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=InitialPower.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../InitialPower.f90 -o InitialPower.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=halofit.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../halofit.f90 -o halofit.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=SecondOrderPK.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../SecondOrderPK.f90 -o SecondOrderPK.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=lensing.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../lensing.f90 -o lensing.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=SeparableBispectrum.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../SeparableBispectrum.f90 -o SeparableBispectrum.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=cmbmain.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../cmbmain.f90 -o cmbmain.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=camb.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../camb.f90 -o camb.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=camb_python.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../camb_python.f90 -o camb_python.o
-xiar -r libcamb.a constants.o config.o classes.o MathUtils.o subroutines.o DarkAge21cm.o DarkEnergyInterface.o SourceWindows.o massive_neutrinos.o model.o results.o bessels.o recfast.o DarkEnergyFluid.o DarkEnergyPPF.o PowellMinimize.o DarkEnergyQuintessence.o equations.o reionization.o InitialPower.o halofit.o SecondOrderPK.o lensing.o SeparableBispectrum.o cmbmain.o camb.o camb_python.o
-xiar: executing 'ar'
-ar: creating libcamb.a
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=inidriver.d -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -c ../inidriver.f90 -o inidriver.o
-ifort -fp-model precise -W0 -WB -fpp -qopenmp -gen-dep=.d -module Release -IRelease/ -I"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" \
-	Release/inidriver.o Release/libcamb.a -cxxlib -qopt-report=0 -qopt-report-phase=vec -L"/mn/stornext/u3/maksymb/commander/camb/fortran/../forutils/Release/" -lforutils -o camb
-#]==]
